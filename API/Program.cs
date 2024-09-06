@@ -1,6 +1,9 @@
 using DAL.Data;
+using Repository.Interfaces;
+using Repository.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using API.Services; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +13,19 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         new MySqlServerVersion(new Version(8, 0, 25)) // Sets MySQL version, if updated please update here!!
     ));
+
+builder.Services.AddScoped<UserService>();
+// Register the IUserService with its implementation UserService
+builder.Services.AddScoped<IUserService, UserService>();
+
+// Register the Interface Repositories with its implementation Repository
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped <ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+
 
 // Add CORS policy - TODO NARROW DOWN ORIGINS IF EVER IN PRODUCTION 
 builder.Services.AddCors(options =>

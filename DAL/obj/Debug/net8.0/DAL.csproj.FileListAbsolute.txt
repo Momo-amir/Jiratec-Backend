@@ -97,3 +97,4 @@
 /Users/momoamer/Repos/Jiratec-Backend/DAL/obj/Debug/net8.0/DAL.pdb
 /Users/momoamer/Repos/Jiratec-Backend/DAL/obj/Debug/net8.0/DAL.genruntimeconfig.cache
 /Users/momoamer/Repos/Jiratec-Backend/DAL/obj/Debug/net8.0/ref/DAL.dll
+/Users/momoamer/Repos/Jiratec-Backend/DAL/obj/Debug/net8.0/DAL.sourcelink.json

@@ -1,62 +1,59 @@
-using Microsoft.AspNetCore.Mvc;       
-using DAL.Data;           
-using DAL.Models;         
-using Microsoft.EntityFrameworkCore;
-using TaskModel = DAL.Models.Task;
+using Microsoft.AspNetCore.Mvc;
+using DAL.Models;
+using Repository.Interfaces; // Include the repository interface
+using TaskModel = DAL.Models.Task; // Alias for DAL.Models.Task
+using Task = System.Threading.Tasks.Task; // Alias for System.Threading.Tasks.Task
 
-namespace API.Controllers;
-[Route("api/[controller]")]
-[ApiController]
-
-public class TaskController: ControllerBase
+namespace API.Controllers
 {
-    private readonly AppDbContext _context;
-
-    public TaskController(AppDbContext context) //Constructor with dependency injection to get access to the DBSet through AppDbContext  
+    [Route("api/[controller]")]
+    [ApiController]
+    public class TaskController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly ITaskRepository _taskRepository;
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<TaskModel>>> GetTask()
-    {
-        try
+        public TaskController(ITaskRepository taskRepository) // Constructor with dependency injection to get access to the repository
         {
-            var tasks = await _context.Tasks.ToListAsync();
-            return Ok(tasks); // Ok is a helper method that creates an ObjectResult with a status code of 200
-        }
-        catch (ArgumentNullException ex)
-        {
-            return BadRequest($"Error bad request - {ex.Message}");
-        }
-        catch (OperationCanceledException ex)
-        {
-            return StatusCode(499, $"Request canceled - {ex.Message}");
-        }
-        
-    }
-
-    [HttpDelete("{id}")] // specify an Id so you only delete the intended task ;) 
-    public async Task<IActionResult> DeleteTask(int id)
-    {
-        var task = await _context.Tasks.FindAsync(id);
-        if (task == null)
-        {
-            return NotFound();
+            _taskRepository = taskRepository;
         }
 
-        _context.Tasks.Remove(task);
-        await _context.SaveChangesAsync();
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<TaskModel>>> GetTask()
+        {
+            try
+            {
+                var tasks = await _taskRepository.GetAllTasksAsync(); // Fetch tasks using repository
+                return Ok(tasks); // Ok is a helper method that creates an ObjectResult with a status code of 200
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest($"Error bad request - {ex.Message}");
+            }
+            catch (OperationCanceledException ex)
+            {
+                return StatusCode(499, $"Request canceled - {ex.Message}");
+            }
+        }
 
-        return NoContent();
-    }
+        [HttpDelete("{id}")] // specify an Id - only deletes the intended task ;)
+        public async Task<IActionResult> DeleteTask(int id)
+        {
+            var task = await _taskRepository.GetTaskByIdAsync(id); // Find the task using repository
+            if (task == null)
+            {
+                return NotFound();
+            }
 
-    [HttpPost]
-    public async Task<ActionResult<TaskModel>> CreateTask(TaskModel task)
-    {
-        _context.Tasks.Add(task);
-        await _context.SaveChangesAsync();
+            await _taskRepository.DeleteTaskAsync(id); // Delete task using repository
+            return NoContent();
+        }
 
-        return CreatedAtAction(nameof(GetTask), new { id = task.TaskID }, task);
+        [HttpPost]
+        public async Task<ActionResult<TaskModel>> CreateTask(TaskModel task)
+        {
+            await _taskRepository.AddTaskAsync(task); // Add a new task using repository
+
+            return CreatedAtAction(nameof(GetTask), new { id = task.TaskID }, task);
+        }
     }
 }

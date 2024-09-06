@@ -996,6 +996,22 @@
         "frameworkReferences": [
           "Microsoft.AspNetCore.App"
         ]
+      },
+      "Repository/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "DAL": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Repository.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Repository.dll": {}
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
       }
     }
   },
@@ -2764,6 +2780,11 @@
       "type": "project",
       "path": "../DAL/DAL.csproj",
       "msbuildProject": "../DAL/DAL.csproj"
+    },
+    "Repository/1.0.0": {
+      "type": "project",
+      "path": "../Repository/Repository.csproj",
+      "msbuildProject": "../Repository/Repository.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -2773,6 +2794,7 @@
       "Microsoft.EntityFrameworkCore >= 8.0.8",
       "Microsoft.EntityFrameworkCore.Tools >= 8.0.8",
       "Pomelo.EntityFrameworkCore.MySql >= 8.0.2",
+      "Repository >= 1.0.0",
       "Swashbuckle.AspNetCore >= 6.4.0"
     ]
   },
@@ -2803,6 +2825,9 @@
           "projectReferences": {
             "/Users/momoamer/Repos/Jiratec-Backend/DAL/DAL.csproj": {
               "projectPath": "/Users/momoamer/Repos/Jiratec-Backend/DAL/DAL.csproj"
+            },
+            "/Users/momoamer/Repos/Jiratec-Backend/Repository/Repository.csproj": {
+              "projectPath": "/Users/momoamer/Repos/Jiratec-Backend/Repository/Repository.csproj"
             }
           }
         }

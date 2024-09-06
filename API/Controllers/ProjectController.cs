@@ -1,8 +1,9 @@
-using Microsoft.AspNetCore.Mvc; // Import necessary namespace for creating API controllers
-using DAL.Models; // Import the namespace for the Project and other models
-using DAL.Data; // Import the namespace for the database context
-using Microsoft.EntityFrameworkCore; 
-
+using Microsoft.AspNetCore.Mvc; 
+using DAL.Models; 
+using Repository.Interfaces; // Import the repository interfaces
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers // Define the namespace for the controller
 {
@@ -11,12 +12,12 @@ namespace API.Controllers // Define the namespace for the controller
     [ApiController]
     public class ProjectController : ControllerBase
     {
-        private readonly AppDbContext _context; // Define a private variable to hold the database context
+        private readonly IProjectRepository _projectRepository; // Define a private variable to hold the repository
 
-        // Constructor to initialize the database context
-        public ProjectController(AppDbContext context)
+        // Constructor to initialize the repository
+        public ProjectController(IProjectRepository projectRepository)
         {
-            _context = context; // Assign the passed context to the private variable
+            _projectRepository = projectRepository; // Assign the passed repository to the private variable
         }
 
         // GET: api/Project
@@ -24,8 +25,8 @@ namespace API.Controllers // Define the namespace for the controller
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
         {
-            // Use Entity Framework to asynchronously get all projects from the database
-            var projects = await _context.Projects.Include(p => p.CreatedByUser).ToListAsync();
+            // Use the repository to asynchronously get all projects
+            var projects = await _projectRepository.GetAllProjectsAsync();
 
             // Return an OK response with the list of projects
             return Ok(projects);
@@ -36,8 +37,8 @@ namespace API.Controllers // Define the namespace for the controller
         [HttpGet("{id}")]
         public async Task<ActionResult<Project>> GetProject(int id)
         {
-            // Use Entity Framework to asynchronously find a project by ID, including the related CreatedByUser
-            var project = await _context.Projects.Include(p => p.CreatedByUser).FirstOrDefaultAsync(p => p.ProjectID == id);
+            // Use the repository to asynchronously find a project by ID
+            var project = await _projectRepository.GetProjectByIdAsync(id);
 
             // If the project is not found, return a 404 Not Found response
             if (project == null)
@@ -54,11 +55,8 @@ namespace API.Controllers // Define the namespace for the controller
         [HttpPost]
         public async Task<ActionResult<Project>> CreateProject(Project project)
         {
-            // Add the new project to the context
-            _context.Projects.Add(project);
-            
-            // Save changes to the database
-            await _context.SaveChangesAsync();
+            // Use the repository to add the new project
+            await _projectRepository.AddProjectAsync(project);
 
             // Return a Created response with the newly created project
             return CreatedAtAction(nameof(GetProject), new { id = project.ProjectID }, project);
@@ -75,18 +73,15 @@ namespace API.Controllers // Define the namespace for the controller
                 return BadRequest(); // Return a 400 Bad Request response if the IDs do not match
             }
 
-            // Mark the project entity as modified in the context
-            _context.Entry(project).State = EntityState.Modified;
-
             try
             {
-                // Attempt to save changes to the database
-                await _context.SaveChangesAsync();
+                // Use the repository to update the project
+                await _projectRepository.UpdateProjectAsync(project);
             }
             catch (DbUpdateConcurrencyException)
             {
                 // If the project does not exist in the database, return a 404 Not Found response
-                if (!_context.Projects.Any(e => e.ProjectID == id))
+                if (await _projectRepository.GetProjectByIdAsync(id) == null)
                 {
                     return NotFound();
                 }
@@ -105,8 +100,8 @@ namespace API.Controllers // Define the namespace for the controller
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProject(int id)
         {
-            // Use Entity Framework to asynchronously find a project by ID
-            var project = await _context.Projects.FindAsync(id);
+            // Use the repository to asynchronously find a project by ID
+            var project = await _projectRepository.GetProjectByIdAsync(id);
 
             // If the project is not found, return a 404 Not Found response
             if (project == null)
@@ -114,14 +109,12 @@ namespace API.Controllers // Define the namespace for the controller
                 return NotFound();
             }
 
-            // Remove the project from the context
-            _context.Projects.Remove(project);
-
-            // Save changes to the database
-            await _context.SaveChangesAsync();
+            // Use the repository to delete the project
+            await _projectRepository.DeleteProjectAsync(id);
 
             // Return a 204 No Content response to indicate the deletion was successful
             return NoContent();
         }
     }
 }
+

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using DAL.Data;
 using DAL.Models;
+using Repository.Interfaces; // Include the repository interface
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
@@ -9,23 +9,24 @@ namespace API.Controllers
     [ApiController]
     public class ActivityLogController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IActivityLogRepository _activityLogRepository;
 
-        public ActivityLogController(AppDbContext context)
+        public ActivityLogController(IActivityLogRepository activityLogRepository) // Constructor with dependency injection to get access to the repository
         {
-            _context = context;
+            _activityLogRepository = activityLogRepository;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ActivityLog>>> GetActivityLogs()
         {
-            return await _context.ActivityLog.ToListAsync(); // Correct DbSet name to plural
+            var activityLogs = await _activityLogRepository.GetAllActivityLogsAsync();
+            return Ok(activityLogs);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ActivityLog>> GetActivityLog(int id)
         {
-            var activityLog = await _context.ActivityLog.FindAsync(id); // Use plural DbSet name
+            var activityLog = await _activityLogRepository.GetActivityLogByIdAsync(id);
 
             if (activityLog == null)
             {
@@ -38,29 +39,25 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<ActivityLog>> CreateActivityLog(ActivityLog activityLog)
         {
-            _context.ActivityLog.Add(activityLog); // Use plural DbSet name
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetActivityLog), new { id = activityLog.LogID }, activityLog); // Correctly use 'LogID'
+            await _activityLogRepository.AddActivityLogAsync(activityLog);
+            return CreatedAtAction(nameof(GetActivityLog), new { id = activityLog.LogID }, activityLog);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateActivityLog(int id, ActivityLog activityLog)
         {
-            if (id != activityLog.LogID) // Correctly use 'LogID'
+            if (id != activityLog.LogID)
             {
                 return BadRequest();
             }
 
-            _context.Entry(activityLog).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                await _activityLogRepository.UpdateActivityLogAsync(activityLog);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_context.ActivityLog.Any(e => e.LogID == id)) // Correctly use 'LogID'
+                if (await _activityLogRepository.GetActivityLogByIdAsync(id) == null)
                 {
                     return NotFound();
                 }
@@ -76,15 +73,13 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteActivityLog(int id)
         {
-            var activityLog = await _context.ActivityLog.FindAsync(id); // Use plural DbSet name
+            var activityLog = await _activityLogRepository.GetActivityLogByIdAsync(id);
             if (activityLog == null)
             {
                 return NotFound();
             }
 
-            _context.ActivityLog.Remove(activityLog); // Use plural DbSet name
-            await _context.SaveChangesAsync();
-
+            await _activityLogRepository.DeleteActivityLogAsync(id);
             return NoContent();
         }
     }
