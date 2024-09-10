@@ -12,4 +12,6 @@ public class AppDbContext : DbContext
     public DbSet<Task> Tasks { get; set; }
     public DbSet<Comment> Comments { get; set; }
     public DbSet<ActivityLog> ActivityLog { get; set; }
+    
+    
 }

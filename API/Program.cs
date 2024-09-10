@@ -37,7 +37,7 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader();
     });
 });
-
+// referenceloophandling to ignore the loop reference
 // Add controllers
 builder.Services.AddControllers();
 

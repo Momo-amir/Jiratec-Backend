@@ -18,10 +18,15 @@ namespace API.Controllers
             _userRepository = userRepository;
             _userService = userService;
         }
-
         [HttpPost("register")]
+  
         public async Task<ActionResult<UserDTO>> Register(User user)
         {
+            // Check if the user already exists
+            if (await _userRepository.GetUserByEmailAsync(user.Email) != null)
+            {
+                return BadRequest("User already exists");
+            }
             // Hash the user's password before saving
             user.PasswordHash = _userService.HashPassword(user, user.PasswordHash);
 
@@ -31,7 +36,7 @@ namespace API.Controllers
             // Convert User to UserDTO for response
             var userDto = new UserDTO
             {
-                UserID = user.UserID,
+                UserID = user.UserID, // This will be set by the database
                 Name = user.Name,
                 Email = user.Email,
                 RoleID = user.RoleID
@@ -40,6 +45,8 @@ namespace API.Controllers
             // Return the user DTO
             return CreatedAtAction(nameof(GetUser), new { id = userDto.UserID }, userDto);
         }
+
+
 
         [HttpPost("login")]
         public async Task<ActionResult<UserDTO>> Login(string email, string password)

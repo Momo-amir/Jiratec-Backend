@@ -35,6 +35,7 @@ public class Task
     [ForeignKey("ProjectID")]
     public Project Project { get; set; }
 
-    [ForeignKey("AssignedTo")]
+    [ForeignKey("AssignedTo")]  
      public User AssignedToUser { get; set; }
+    
 }
