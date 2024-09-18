@@ -92,10 +92,7 @@ namespace DAL.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ProjectID"));
 
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CreatedByUserUserID")
+                    b.Property<int>("CreatedByUserID")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
@@ -107,11 +104,12 @@ namespace DAL.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.HasKey("ProjectID");
 
-                    b.HasIndex("CreatedByUserUserID");
+                    b.HasIndex("CreatedByUserID");
 
                     b.ToTable("Projects");
                 });
@@ -151,7 +149,7 @@ namespace DAL.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<DateTime>("DueDate")
+                    b.Property<DateTime?>("DueDate")
                         .HasColumnType("datetime(6)");
 
                     b.Property<int>("Priority")
@@ -169,8 +167,6 @@ namespace DAL.Migrations
                         .HasColumnType("varchar(100)");
 
                     b.HasKey("TaskID");
-
-                    b.HasIndex("AssignedTo");
 
                     b.HasIndex("ProjectID");
 
@@ -197,14 +193,42 @@ namespace DAL.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("RoleID")
+                    b.Property<int>("Role")
                         .HasColumnType("int");
 
                     b.HasKey("UserID");
 
-                    b.HasIndex("RoleID");
-
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("ProjectUser", b =>
+                {
+                    b.Property<int>("ProjectsProjectID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UsersUserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProjectsProjectID", "UsersUserID");
+
+                    b.HasIndex("UsersUserID");
+
+                    b.ToTable("UserProjects", (string)null);
+                });
+
+            modelBuilder.Entity("TaskUser", b =>
+                {
+                    b.Property<int>("AssignedToTaskID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AssignedToUserUserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("AssignedToTaskID", "AssignedToUserUserID");
+
+                    b.HasIndex("AssignedToUserUserID");
+
+                    b.ToTable("UserTasks", (string)null);
                 });
 
             modelBuilder.Entity("DAL.Models.ActivityLog", b =>
@@ -247,43 +271,59 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("DAL.Models.Project", b =>
                 {
-                    b.HasOne("DAL.Models.User", "CreatedByUser")
+                    b.HasOne("DAL.Models.User", "CreatedBy")
                         .WithMany()
-                        .HasForeignKey("CreatedByUserUserID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("CreatedByUserID")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("CreatedByUser");
+                    b.Navigation("CreatedBy");
                 });
 
             modelBuilder.Entity("DAL.Models.Task", b =>
                 {
-                    b.HasOne("DAL.Models.User", "AssignedToUser")
-                        .WithMany()
-                        .HasForeignKey("AssignedTo")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("DAL.Models.Project", "Project")
-                        .WithMany()
+                        .WithMany("Tasks")
                         .HasForeignKey("ProjectID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("AssignedToUser");
-
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("DAL.Models.User", b =>
+            modelBuilder.Entity("ProjectUser", b =>
                 {
-                    b.HasOne("DAL.Models.Role", "Role")
+                    b.HasOne("DAL.Models.Project", null)
                         .WithMany()
-                        .HasForeignKey("RoleID")
+                        .HasForeignKey("ProjectsProjectID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Role");
+                    b.HasOne("DAL.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersUserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TaskUser", b =>
+                {
+                    b.HasOne("DAL.Models.Task", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedToTaskID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DAL.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedToUserUserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DAL.Models.Project", b =>
+                {
+                    b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618
         }

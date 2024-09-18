@@ -4,6 +4,10 @@ using Repository.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using API.Services; 
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +28,6 @@ builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped <ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 
 
 // Add CORS policy - TODO NARROW DOWN ORIGINS IF EVER IN PRODUCTION 
@@ -37,7 +40,30 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader();
     });
 });
-// referenceloophandling to ignore the loop reference
+
+// Add JWT authentication services
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"])), 
+            ValidateIssuer = false, 
+            ValidateAudience = false, 
+            ClockSkew = TimeSpan.Zero 
+        };
+    });
+
+// Add Authorization services
+builder.Services.AddAuthorization();
+
+
+
 // Add controllers
 builder.Services.AddControllers();
 

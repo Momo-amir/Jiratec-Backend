@@ -1,8 +1,9 @@
 using API.Services;
 using DAL.Models;
-using DAL.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
+
+
 
 namespace API.Controllers
 {
@@ -39,7 +40,7 @@ namespace API.Controllers
                 UserID = user.UserID, // This will be set by the database
                 Name = user.Name,
                 Email = user.Email,
-                RoleID = user.RoleID
+                Role = user.Role
             };
 
             // Return the user DTO
@@ -49,33 +50,40 @@ namespace API.Controllers
 
 
         [HttpPost("login")]
-        public async Task<ActionResult<UserDTO>> Login(string email, string password)
+        public async Task<ActionResult<UserDTO>> Login([FromBody] LoginRequest loginRequest)
         {
-            // Find the user by email using the repository
-            var user = await _userRepository.GetUserByEmailAsync(email);
+            if (loginRequest == null)
+            {
+                return BadRequest("Invalid login request.");
+            }
+
+            var user = await _userRepository.GetUserByEmailAsync(loginRequest.Email);
             if (user == null)
             {
                 return NotFound("User not found");
             }
 
-            // Verify the provided password
-            if (!_userService.VerifyPassword(user, user.PasswordHash, password))
+            if (!_userService.VerifyPassword(user, user.PasswordHash, loginRequest.Password))
             {
                 return Unauthorized("Invalid credentials");
             }
 
-            // Convert User to UserDTO for response
+            // Generate JWT Token
+            var token = _userService.GenerateJwtToken(user);
+
+
             var userDto = new UserDTO
             {
                 UserID = user.UserID,
                 Name = user.Name,
                 Email = user.Email,
-                RoleID = user.RoleID
+                Role = user.Role,
+                Token = token
             };
 
-            // Return user details, excluding the password hash
             return Ok(userDto);
         }
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> GetUser(int id)
@@ -93,11 +101,29 @@ namespace API.Controllers
                 UserID = user.UserID,
                 Name = user.Name,
                 Email = user.Email,
-                RoleID = user.RoleID
+                Role = user.Role
             };
 
             // Return the user DTO
             return Ok(userDto);
         }
+
+        [HttpGet("User/{userId}/projects")]
+        public async Task<ActionResult<List<ProjectDTO>>> GetAllUsersProjectsAsync(int userId)
+        {
+            // Fetch the user with their projects
+            var user = await _userRepository.GetUserWithProjectsAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound($"User with ID {userId} not found.");
+            }
+
+            // Map the projects to ProjectDTOs
+            var projectDtos = user.Projects.Select(p => new ProjectDTO().MapProjectToDto(p)).ToList();
+
+            return Ok(projectDtos);
+        }
+
     }
 }

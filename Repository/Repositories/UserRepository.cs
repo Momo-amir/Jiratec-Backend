@@ -31,6 +31,12 @@ namespace Repository.Repositories
             return await _context.Users.FindAsync(id);
         }
 
+        public async Task<User?> GetUserByEmailAsync(string email)
+        {
+            // Retrieve a user by their email address
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
         public async Task AddUserAsync(User user)
         {
             // Add a new user to the database
@@ -56,10 +62,25 @@ namespace Repository.Repositories
             }
         }
 
-        public async Task<User?> GetUserByEmailAsync(string email)
+        // New method to get multiple users by their IDs
+        public async Task<IEnumerable<User>> GetUsersByIdsAsync(IEnumerable<int> userIds)
         {
-            // Retrieve a user by their email address
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await _context.Users
+                .Where(u => userIds.Contains(u.UserID))
+                .ToListAsync();
+
         }
+
+        public async Task<User?> GetUserWithProjectsAsync(int userId)
+        {
+            return await _context.Users
+                .Include(u => u.Projects)
+                .ThenInclude(p => p.CreatedBy)
+                .Include(u => u.Projects)
+                .ThenInclude(p => p.Users)
+                .FirstOrDefaultAsync(u => u.UserID == userId);
+        }
+
+
     }
 }

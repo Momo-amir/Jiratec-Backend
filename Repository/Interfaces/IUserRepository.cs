@@ -8,13 +8,19 @@ namespace Repository.Interfaces
 {
     public interface IUserRepository
     {
-        // Use the alias 'Task' for all asynchronous methods to resolve the ambiguity
         Task<IEnumerable<User>> GetAllUsersAsync();
         Task<User?> GetUserByIdAsync(int id);
+        Task<User?> GetUserByEmailAsync(string email);
         Task AddUserAsync(User user);
-        Task<User?>  GetUserByEmailAsync(string email);
         Task UpdateUserAsync(User user);
         Task DeleteUserAsync(int id);
+
+        // New method to get multiple users by their IDs
+        Task<IEnumerable<User>> GetUsersByIdsAsync(IEnumerable<int> userIds);
+        
+        Task<User?> GetUserWithProjectsAsync(int userId);
+
+        
+        
     }
 }
-

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using DAL.Enums;
 
 
 namespace DAL.Models;
@@ -10,7 +11,14 @@ public class User
     public string Name { get; set; }
     public string Email { get; set; }
     public string PasswordHash { get; set; }
-    public int RoleID { get; set; }
+   
+    public RoleEnum Role { get; set; }
+    
+    public ICollection<Task>? AssignedTo { get; set; }    
+    
+    public ICollection<Project> Projects { get; set; } = new List<Project>();
 
-    public Role Role { get; set; }
+    
+    
+    
 }

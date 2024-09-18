@@ -12,5 +12,8 @@ namespace Repository.Interfaces
         Task AddProjectAsync(Project project);
         Task UpdateProjectAsync(Project project);
         Task DeleteProjectAsync(int id);
+
+        // New method to get projects for a specific user
+        Task<IEnumerable<Project>> GetProjectsForUserAsync(int userId);
     }
 }

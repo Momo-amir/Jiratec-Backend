@@ -6,5 +6,7 @@ namespace API.Services
     {
         string HashPassword(User user, string password);
         bool VerifyPassword(User user, string hashedPassword, string providedPassword);
+        
+        string GenerateJwtToken(User? user);
     }
 }

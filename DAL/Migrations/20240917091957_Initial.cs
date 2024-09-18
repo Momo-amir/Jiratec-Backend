@@ -42,17 +42,11 @@ namespace DAL.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     PasswordHash = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    RoleID = table.Column<int>(type: "int", nullable: false)
+                    Role = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.UserID);
-                    table.ForeignKey(
-                        name: "FK_Users_Roles_RoleID",
-                        column: x => x.RoleID,
-                        principalTable: "Roles",
-                        principalColumn: "RoleID",
-                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -62,23 +56,22 @@ namespace DAL.Migrations
                 {
                     ProjectID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Title = table.Column<string>(type: "longtext", nullable: false)
+                    Title = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Description = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    CreatedByUserUserID = table.Column<int>(type: "int", nullable: false)
+                    CreatedByUserID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Projects", x => x.ProjectID);
                     table.ForeignKey(
-                        name: "FK_Projects_Users_CreatedByUserUserID",
-                        column: x => x.CreatedByUserUserID,
+                        name: "FK_Projects_Users_CreatedByUserID",
+                        column: x => x.CreatedByUserID,
                         principalTable: "Users",
                         principalColumn: "UserID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -96,7 +89,7 @@ namespace DAL.Migrations
                     AssignedTo = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Priority = table.Column<int>(type: "int", nullable: false),
-                    DueDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
@@ -108,9 +101,28 @@ namespace DAL.Migrations
                         principalTable: "Projects",
                         principalColumn: "ProjectID",
                         onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "UserProjects",
+                columns: table => new
+                {
+                    ProjectsProjectID = table.Column<int>(type: "int", nullable: false),
+                    UsersUserID = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserProjects", x => new { x.ProjectsProjectID, x.UsersUserID });
                     table.ForeignKey(
-                        name: "FK_Tasks_Users_AssignedTo",
-                        column: x => x.AssignedTo,
+                        name: "FK_UserProjects_Projects_ProjectsProjectID",
+                        column: x => x.ProjectsProjectID,
+                        principalTable: "Projects",
+                        principalColumn: "ProjectID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserProjects_Users_UsersUserID",
+                        column: x => x.UsersUserID,
                         principalTable: "Users",
                         principalColumn: "UserID",
                         onDelete: ReferentialAction.Cascade);
@@ -177,6 +189,31 @@ namespace DAL.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "UserTasks",
+                columns: table => new
+                {
+                    AssignedToTaskID = table.Column<int>(type: "int", nullable: false),
+                    AssignedToUserUserID = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserTasks", x => new { x.AssignedToTaskID, x.AssignedToUserUserID });
+                    table.ForeignKey(
+                        name: "FK_UserTasks_Tasks_AssignedToTaskID",
+                        column: x => x.AssignedToTaskID,
+                        principalTable: "Tasks",
+                        principalColumn: "TaskID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserTasks_Users_AssignedToUserUserID",
+                        column: x => x.AssignedToUserUserID,
+                        principalTable: "Users",
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
                 name: "IX_ActivityLog_TaskID",
                 table: "ActivityLog",
@@ -198,14 +235,9 @@ namespace DAL.Migrations
                 column: "UserID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Projects_CreatedByUserUserID",
+                name: "IX_Projects_CreatedByUserID",
                 table: "Projects",
-                column: "CreatedByUserUserID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Tasks_AssignedTo",
-                table: "Tasks",
-                column: "AssignedTo");
+                column: "CreatedByUserID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tasks_ProjectID",
@@ -213,9 +245,14 @@ namespace DAL.Migrations
                 column: "ProjectID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_RoleID",
-                table: "Users",
-                column: "RoleID");
+                name: "IX_UserProjects_UsersUserID",
+                table: "UserProjects",
+                column: "UsersUserID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserTasks_AssignedToUserUserID",
+                table: "UserTasks",
+                column: "AssignedToUserUserID");
         }
 
         /// <inheritdoc />
@@ -228,6 +265,15 @@ namespace DAL.Migrations
                 name: "Comments");
 
             migrationBuilder.DropTable(
+                name: "Roles");
+
+            migrationBuilder.DropTable(
+                name: "UserProjects");
+
+            migrationBuilder.DropTable(
+                name: "UserTasks");
+
+            migrationBuilder.DropTable(
                 name: "Tasks");
 
             migrationBuilder.DropTable(
@@ -235,9 +281,6 @@ namespace DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
-
-            migrationBuilder.DropTable(
-                name: "Roles");
         }
     }
 }

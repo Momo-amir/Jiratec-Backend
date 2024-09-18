@@ -114,3 +114,11 @@
 /Users/momoamer/Repos/Jiratec-Backend/API/bin/Debug/net8.0/Repository
 /Users/momoamer/Repos/Jiratec-Backend/API/bin/Debug/net8.0/Repository.dll
 /Users/momoamer/Repos/Jiratec-Backend/API/bin/Debug/net8.0/Repository.pdb
+/Users/momoamer/Repos/Jiratec-Backend/API/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
+/Users/momoamer/Repos/Jiratec-Backend/API/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/Users/momoamer/Repos/Jiratec-Backend/API/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll
+/Users/momoamer/Repos/Jiratec-Backend/API/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
+/Users/momoamer/Repos/Jiratec-Backend/API/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll
+/Users/momoamer/Repos/Jiratec-Backend/API/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/Users/momoamer/Repos/Jiratec-Backend/API/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.dll
+/Users/momoamer/Repos/Jiratec-Backend/API/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
