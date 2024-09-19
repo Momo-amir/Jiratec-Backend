@@ -1,18 +1,17 @@
 using DAL.Enums;
+using System.Collections.Generic;
 
 namespace DAL.Models
 {
     public class UserDTO
-
     {
-    public int UserID { get; set; } // User ID for identification
-    public string? Name { get; set; } // Display name of the user
-    public string? Email { get; set; } // Email of the user
+        public int UserID { get; set; } // Required
 
-    public RoleEnum Role { get; set; } // Role of the user
+        public string? Name { get; set; } // Optional
+        public string? Email { get; set; } // Optional
+        public RoleEnum? Role { get; set; } // Optional
+        public string? Token { get; set; } // Optional, used during authentication
 
-    public string? Token { get; set; } // JWT Token for authentication
-    
-     public List<ProjectDTO> Projects { get; set; } // Optional: Only if you need to include projects in the user response
+        public List<ProjectDTO>? Projects { get; set; } // Optional, used when needed
     }
 }

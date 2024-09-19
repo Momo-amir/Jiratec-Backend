@@ -3,25 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using DAL.Enums;
 
+
 namespace DAL.Models
 {
-    public class ProjectDTO
+     public class ProjectDTO
     {
-        public int ProjectID { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public UserDTO CreatedBy { get; set; } // Use UserDTO here
-        public string CreatedByName { get; set; } // Optional: Include the creator's name
-        public DateTime CreatedDate { get; set; }
+        public int ProjectID { get; set; } // For new projects, this can be 0 or omitted
 
-        public List<TaskDTO> Tasks { get; set; } // Optional: Only if you need to include tasks in the project response
+        public string Title { get; set; } // Required
+        public string Description { get; set; } // Required
 
-        public List<UserDTO> Users { get; set; }
+        public UserDTO? CreatedBy { get; set; } // Optional, populated by backend
+        public string? CreatedByName { get; set; } // Optional, populated by backend
+        public DateTime? CreatedDate { get; set; } // Optional, populated by backend
 
-        // Mapping method inside the model entity
+        public List<TaskDTO>? Tasks { get; set; } // Optional
+        public List<UserDTO>? Users { get; set; } // Optional
+
+        // Mapping method
         public ProjectDTO MapProjectToDto(Project project)
         {
-            if (project == null) return null; // Null check
+            if (project == null) return null;
 
             return new ProjectDTO
             {
@@ -47,8 +49,6 @@ namespace DAL.Models
                     Priority = t.Priority,
                     DueDate = t.DueDate
                 }).ToList(),
-
-                // Map the users assigned to the project
                 Users = project.Users?.Select(u => new UserDTO
                 {
                     UserID = u.UserID,
@@ -59,6 +59,7 @@ namespace DAL.Models
             };
         }
     }
+
 
     public class TaskDTO
     {
