@@ -23,7 +23,7 @@ namespace Repository.Repositories
         {
             return await _context.Tasks
                 .Include(t => t.Project)
-                .Include(t => t.AssignedToUser)
+                .Include(t => t.AssignedUser)
                 .ToListAsync();
         }
 
@@ -31,7 +31,7 @@ namespace Repository.Repositories
         {
             return await _context.Tasks
                 .Include(t => t.Project)
-                .Include(t => t.AssignedToUser)
+                .Include(t => t.AssignedUser)
                 .FirstOrDefaultAsync(t => t.TaskID == id);
         }
 

@@ -6,7 +6,7 @@ using DAL.Enums;
 
 namespace DAL.Models
 {
-     public class ProjectDTO
+    public class ProjectDTO
     {
         public int ProjectID { get; set; } // For new projects, this can be 0 or omitted
 
@@ -30,13 +30,15 @@ namespace DAL.Models
                 ProjectID = project.ProjectID,
                 Title = project.Title,
                 Description = project.Description,
-                CreatedBy = project.CreatedBy != null ? new UserDTO
-                {
-                    UserID = project.CreatedBy.UserID,
-                    Name = project.CreatedBy.Name,
-                    Email = project.CreatedBy.Email,
-                    Role = project.CreatedBy.Role
-                } : null,
+                CreatedBy = project.CreatedBy != null
+                    ? new UserDTO
+                    {
+                        UserID = project.CreatedBy.UserID,
+                        Name = project.CreatedBy.Name,
+                        Email = project.CreatedBy.Email,
+                        Role = project.CreatedBy.Role
+                    }
+                    : null,
                 CreatedByName = project.CreatedBy?.Name,
                 CreatedDate = project.CreatedDate,
                 Tasks = project.Tasks?.Select(t => new TaskDTO
@@ -64,10 +66,11 @@ namespace DAL.Models
     public class TaskDTO
     {
         public int TaskID { get; set; }
+        public int ProjectID { get; set; } // Include ProjectID
         public string Title { get; set; }
         public string Description { get; set; }
         public int AssignedTo { get; set; }
-        public string AssignedToName { get; set; } // Optional: Include the assignee's name
+        public string? AssignedToName { get; set; }
         public TaskStatusEnum Status { get; set; }
         public TaskPriorityEnum Priority { get; set; }
         public DateTime? DueDate { get; set; }

@@ -20,6 +20,9 @@ namespace DAL.Models
         public string Description { get; set; }
 
         public int AssignedTo { get; set; }
+        
+        [ForeignKey("AssignedTo")]
+        public User AssignedUser { get; set; }
 
         [Required]
         [EnumDataType(typeof(TaskStatusEnum))]
@@ -38,6 +41,6 @@ namespace DAL.Models
         public Project Project { get; set; }
 
         // Collection of users assigned to this task
-        public ICollection<User> AssignedToUser { get; set; } = new List<User>();
+        
     }
 }

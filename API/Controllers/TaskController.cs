@@ -13,12 +13,18 @@ namespace API.Controllers
     public class TaskController : ControllerBase
     {
         private readonly ITaskRepository _taskRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IProjectRepository _projectRepository;
 
-        public TaskController(ITaskRepository taskRepository) // Constructor with dependency injection to get access to the repository
+        public TaskController(
+            ITaskRepository taskRepository,
+            IProjectRepository projectRepository,
+            IUserRepository userRepository)
         {
             _taskRepository = taskRepository;
-        }
-
+            _projectRepository = projectRepository;
+            _userRepository = userRepository;
+        }   
         // GET: api/Task
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TaskDTO>>> GetTasks()
@@ -59,12 +65,35 @@ namespace API.Controllers
             return Ok(taskDto); // Return 200 OK with the task DTO
         }
 
-        // POST: api/Task
         [HttpPost]
         public async Task<ActionResult<TaskDTO>> CreateTask(TaskDTO taskDto)
         {
-            // Manually map TaskDTO to TaskModel
+            // Validate the incoming DTO
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Check if the Project exists
+            var project = await _projectRepository.GetProjectByIdAsync(taskDto.ProjectID);
+            if (project == null)
+            {
+                return NotFound("Project not found.");
+            }
+
+            // Check if the Assigned User exists
+            var user = await _userRepository.GetUserByIdAsync(taskDto.AssignedTo);
+            if (user == null)
+            {
+                return NotFound("Assigned user not found.");
+            }
+
+            // Map TaskDTO to TaskModel
             var task = MapDtoToTask(taskDto);
+
+            // Assign navigation properties
+            task.Project = project;
+            task.AssignedUser = user;
 
             await _taskRepository.AddTaskAsync(task); // Add a new task using repository
 
@@ -90,18 +119,22 @@ namespace API.Controllers
         // Helper method to manually map a Task entity to a TaskDTO
         private TaskDTO MapTaskToDto(TaskModel task)
         {
-            return new TaskDTO
-            {
-                TaskID = task.TaskID,
-                Title = task.Title,
-                Description = task.Description,
-                AssignedTo = task.AssignedTo,
-                AssignedToName = task.AssignedToUser?.Select(u => u.Name).FirstOrDefault(), // Get the first assigned user name
-                Status = task.Status,
-                Priority = task.Priority,
-                DueDate = task.DueDate
-            };
+            if (task.AssignedUser?.Name != null)
+                return new TaskDTO
+                {
+                    TaskID = task.TaskID,
+                    Title = task.Title,
+                    Description = task.Description,
+                    AssignedTo = task.AssignedTo,
+                    AssignedToName = task.AssignedUser?.Name,
+                    Status = task.Status,
+                    Priority = task.Priority,
+                    DueDate = task.DueDate
+                };
+
+            throw new InvalidOperationException();
         }
+
 
         // Helper method to manually map a TaskDTO to a Task entity
         private TaskModel MapDtoToTask(TaskDTO taskDto)
@@ -114,9 +147,41 @@ namespace API.Controllers
                 AssignedTo = taskDto.AssignedTo,
                 Status = taskDto.Status,
                 Priority = taskDto.Priority,
-                DueDate = taskDto.DueDate
-                // Additional mappings can be added here
+                DueDate = taskDto.DueDate,
+                ProjectID = taskDto.ProjectID
             };
         }
+
+        
+        // PUT: api/Task/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTask(int id, TaskDTO taskDto)
+        {
+            if (id != taskDto.TaskID)
+            {
+                return BadRequest("Task ID mismatch.");
+            }
+
+            var existingTask = await _taskRepository.GetTaskByIdAsync(id);
+            if (existingTask == null)
+            {
+                return NotFound(); // Task not found
+            }
+
+            // Map the updated properties
+            existingTask.Title = taskDto.Title;
+            existingTask.Description = taskDto.Description;
+            existingTask.AssignedTo = taskDto.AssignedTo;
+            existingTask.Status = taskDto.Status;
+            existingTask.Priority = taskDto.Priority;
+            existingTask.DueDate = taskDto.DueDate;
+
+            await _taskRepository.UpdateTaskAsync(existingTask);
+
+            return NoContent();
+        }
+
     }
+    
 }
+

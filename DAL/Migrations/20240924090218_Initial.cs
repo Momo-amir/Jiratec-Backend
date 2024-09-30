@@ -60,8 +60,8 @@ namespace DAL.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Description = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    CreatedByUserID = table.Column<int>(type: "int", nullable: false)
+                    CreatedByUserID = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -101,6 +101,12 @@ namespace DAL.Migrations
                         principalTable: "Projects",
                         principalColumn: "ProjectID",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Tasks_Users_AssignedTo",
+                        column: x => x.AssignedTo,
+                        principalTable: "Users",
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -189,31 +195,6 @@ namespace DAL.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
-                name: "UserTasks",
-                columns: table => new
-                {
-                    AssignedToTaskID = table.Column<int>(type: "int", nullable: false),
-                    AssignedToUserUserID = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserTasks", x => new { x.AssignedToTaskID, x.AssignedToUserUserID });
-                    table.ForeignKey(
-                        name: "FK_UserTasks_Tasks_AssignedToTaskID",
-                        column: x => x.AssignedToTaskID,
-                        principalTable: "Tasks",
-                        principalColumn: "TaskID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserTasks_Users_AssignedToUserUserID",
-                        column: x => x.AssignedToUserUserID,
-                        principalTable: "Users",
-                        principalColumn: "UserID",
-                        onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
             migrationBuilder.CreateIndex(
                 name: "IX_ActivityLog_TaskID",
                 table: "ActivityLog",
@@ -240,6 +221,11 @@ namespace DAL.Migrations
                 column: "CreatedByUserID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Tasks_AssignedTo",
+                table: "Tasks",
+                column: "AssignedTo");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Tasks_ProjectID",
                 table: "Tasks",
                 column: "ProjectID");
@@ -248,11 +234,6 @@ namespace DAL.Migrations
                 name: "IX_UserProjects_UsersUserID",
                 table: "UserProjects",
                 column: "UsersUserID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserTasks_AssignedToUserUserID",
-                table: "UserTasks",
-                column: "AssignedToUserUserID");
         }
 
         /// <inheritdoc />
@@ -269,9 +250,6 @@ namespace DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserProjects");
-
-            migrationBuilder.DropTable(
-                name: "UserTasks");
 
             migrationBuilder.DropTable(
                 name: "Tasks");

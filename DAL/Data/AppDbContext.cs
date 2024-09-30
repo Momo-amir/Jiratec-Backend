@@ -19,9 +19,11 @@
 
             // Configure the many-to-many relationship
             modelBuilder.Entity<Task>()
-                .HasMany(t => t.AssignedToUser) // or AssignedToUser if you kept that name
-                .WithMany(u => u.AssignedTo)
-                .UsingEntity(j => j.ToTable("UserTasks"));
+                .HasOne(t => t.AssignedUser)
+                .WithMany(u => u.AssignedTasks)
+                .HasForeignKey(t => t.AssignedTo)
+                .OnDelete(DeleteBehavior.Restrict);
+
             
             modelBuilder.Entity<Project>()
                 .HasMany(p => p.Users)
@@ -31,7 +33,7 @@
             // Configure the one-to-many relationship for CreatedBy
             modelBuilder.Entity<Project>()
                 .HasOne(p => p.CreatedBy)
-                .WithMany() // Assuming User doesn't have a collection of created projects
+                .WithMany() // No navigation property on User
                 .OnDelete(DeleteBehavior.Restrict);
 
                 
