@@ -50,44 +50,60 @@ namespace API.Controllers
         [Authorize]
         public async Task<ActionResult<ProjectDTO>> CreateProject([FromBody] ProjectDTO projectDto)
         {
-            if (projectDto == null)
+            try
             {
-                return BadRequest("Project data is required.");
+                if (projectDto == null)
+                {
+                    return BadRequest("Project data is required.");
+                }
+
+                if (string.IsNullOrEmpty(projectDto.Title) || string.IsNullOrEmpty(projectDto.Description))
+                {
+                    return BadRequest("Title and Description are required.");
+                }
+
+                // Get the current user's ID from the authentication token
+                int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+                // Fetch the user from the database
+                var user = await _userRepository.GetUserByIdAsync(userId);
+                if (user == null)
+                {
+                    return Unauthorized("User not found.");
+                }
+
+                // Create a new Project entity
+                var project = new Project
+                {
+                    Title = projectDto.Title,
+                    Description = projectDto.Description,
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = user,
+                    Users = new List<User> { user } // Assign the creator as the initial member
+                };
+
+                // Add the project to the database
+                await _projectRepository.AddProjectAsync(project);
+
+                // Map back to DTO
+                var createdProjectDto = new ProjectDTO().MapProjectToDto(project);
+
+                return CreatedAtAction(nameof(GetProject), new { id = createdProjectDto.ProjectID }, createdProjectDto);
             }
-
-            if (string.IsNullOrEmpty(projectDto.Title) || string.IsNullOrEmpty(projectDto.Description))
+            catch (DbUpdateException dbEx)
             {
-                return BadRequest("Title and Description are required.");
+                // Log the exception and return a custom error response
+                // Example: _logger.LogError(dbEx, "Database update failed");
+                return StatusCode(500, "An error occurred while saving the project.");
             }
-
-            // Get the current user's ID from the authentication token
-            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-
-            // Fetch the user from the database
-            var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null)
+            catch (Exception ex)
             {
-                return Unauthorized("User not found.");
+                // Log the exception and return a general error response
+                // Example: _logger.LogError(ex, "An unexpected error occurred");
+                return StatusCode(500, "An unexpected error occurred.");
             }
-
-            // Create a new Project entity
-            var project = new Project
-            {
-                Title = projectDto.Title,
-                Description = projectDto.Description,
-                CreatedDate = DateTime.Now,
-                CreatedBy = user,
-                Users = new List<User> { user } // Assign the creator as the initial member
-            };
-
-            // Add the project to the database
-            await _projectRepository.AddProjectAsync(project);
-
-            // Map back to DTO
-            var createdProjectDto = new ProjectDTO().MapProjectToDto(project);
-
-            return CreatedAtAction(nameof(GetProject), new { id = createdProjectDto.ProjectID }, createdProjectDto);
         }
+
 
         // PUT: api/Project/5
         [HttpPut("{id}")]
@@ -174,7 +190,6 @@ namespace API.Controllers
 
             return NoContent();
         }
-
-        // Additional methods for future functionality can be added here
+        
     }
 }

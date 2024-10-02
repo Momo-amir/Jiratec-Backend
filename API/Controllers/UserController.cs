@@ -124,6 +124,22 @@ namespace API.Controllers
 
             return Ok(projectDtos);
         }
+        
+        
+        // get all users
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAllUsersAsync()
+        {
+            var users = await _userRepository.GetAllUsersAsync();
+            var userDtos = users.Select(u => new UserDTO
+            {
+                UserID = u.UserID,
+                Name = u.Name,
+                Email = u.Email,
+                Role = u.Role
+            }).ToList();
+            return Ok(userDtos);
+        }
 
     }
 }
