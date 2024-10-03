@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using DAL.Enums;
 
-
 namespace DAL.Models
 {
     public class ProjectDTO
     {
-        public int ProjectID { get; set; } // For new projects, this can be 0 or omitted
+        public int ProjectID { get; set; } // For new projects, this can be omitted
 
-        public string Title { get; set; } // Required
-        public string Description { get; set; } // Required
+        public string? Title { get; set; } // Required but set nullable
+        public string? Description { get; set; } // Required but set nullable
 
         public UserDTO? CreatedBy { get; set; } // Optional, populated by backend
         public string? CreatedByName { get; set; } // Optional, populated by backend
@@ -21,7 +20,7 @@ namespace DAL.Models
         public List<UserDTO>? Users { get; set; } // Optional
 
         // Mapping method
-        public ProjectDTO MapProjectToDto(Project project)
+        public ProjectDTO? MapProjectToDto(Project? project)
         {
             if (project == null) return null;
 
@@ -62,17 +61,16 @@ namespace DAL.Models
         }
     }
 
-
     public class TaskDTO
     {
         public int TaskID { get; set; }
         public int ProjectID { get; set; } // Include ProjectID
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public int AssignedTo { get; set; }
-        public string? AssignedToName { get; set; }
-        public TaskStatusEnum Status { get; set; }
-        public TaskPriorityEnum Priority { get; set; }
-        public DateTime? DueDate { get; set; }
+        public string Title { get; set; } // Required
+        public string? Description { get; set; } // Optional
+        public int AssignedTo { get; set; } // Required
+        public string? AssignedToName { get; set; } // Optional
+        public TaskStatusEnum Status { get; set; } // Required
+        public TaskPriorityEnum Priority { get; set; } // Required
+        public DateTime? DueDate { get; set; } // Optional
     }
 }
