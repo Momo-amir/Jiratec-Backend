@@ -191,5 +191,36 @@ namespace API.Controllers
             return NoContent();
         }
         
+        // DELETE: api/Project/{projectId}/Users/{userId}
+        [HttpDelete("{projectId}/Users/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> RemoveUserFromProject(int projectId, int userId)
+        {
+            var project = await _projectRepository.GetProjectByIdAsync(projectId);
+            if (project == null)
+            {
+                return NotFound("Project not found.");
+            }
+
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            if (project.Users.Any(u => u.UserID == userId))
+            {
+                project.Users.Remove(user);
+                await _projectRepository.UpdateProjectAsync(project);
+            }
+            else
+            {
+                return BadRequest("User is not a member of the project.");
+            }
+
+            return NoContent();
+        }
+
+        
     }
 }
