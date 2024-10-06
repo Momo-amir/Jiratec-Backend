@@ -5,6 +5,7 @@ using DAL.Models;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Task = System.Threading.Tasks.Task;
+
 namespace Repository.Repositories
 {
     public class CommentRepository : ICommentRepository
@@ -16,14 +17,16 @@ namespace Repository.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Comment?>> GetAllCommentsAsync()
+        public async Task<IEnumerable<Comment>> GetAllCommentsAsync()
         {
             return await _context.Comments.ToListAsync();
         }
 
         public async Task<Comment?> GetCommentByIdAsync(int id)
         {
-            return await _context.Comments.FindAsync(id);
+            return await _context.Comments
+                .Include(c => c.User) // Include the User object in the query
+                .FirstOrDefaultAsync(c => c.CommentID == id);
         }
 
         public async Task AddCommentAsync(Comment comment)
@@ -46,6 +49,14 @@ namespace Repository.Repositories
                 _context.Comments.Remove(comment);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<IEnumerable<Comment>> GetCommentsByTaskIdAsync(int taskId)
+        {
+            return await _context.Comments
+                .Where(c => c.TaskID == taskId)
+                .Include(c => c.User) // Include the User object in the query for details about the commenter
+                .ToListAsync();
         }
     }
 }

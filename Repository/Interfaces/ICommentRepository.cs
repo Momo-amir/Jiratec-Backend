@@ -7,10 +7,11 @@ namespace Repository.Interfaces
 {
     public interface ICommentRepository
     {
-        Task<IEnumerable<Comment?>> GetAllCommentsAsync();
+        Task<IEnumerable<Comment>> GetAllCommentsAsync();
         Task<Comment?> GetCommentByIdAsync(int id);
         Task AddCommentAsync(Comment comment);
         Task UpdateCommentAsync(Comment comment);
         Task DeleteCommentAsync(int id);
+        Task<IEnumerable<Comment>> GetCommentsByTaskIdAsync(int taskId); // Added method for fetching comments by task
     }
 }

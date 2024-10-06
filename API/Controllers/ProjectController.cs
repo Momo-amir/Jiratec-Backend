@@ -131,21 +131,21 @@ namespace API.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Project/5
-        [HttpDelete("{id}")]
-        [Authorize]
-        public async Task<IActionResult> DeleteProject(int id)
-        {
-            var project = await _projectRepository.GetProjectByIdAsync(id);
-            if (project == null)
+            // DELETE: api/Project/5
+            [HttpDelete("{id}")]
+            [Authorize]
+            public async Task<IActionResult> DeleteProject(int id)
             {
-                return NotFound("Project not found.");
+                var project = await _projectRepository.GetProjectByIdAsync(id);
+                if (project == null)
+                {
+                    return NotFound("Project not found.");
+                }
+
+                await _projectRepository.DeleteProjectAsync(id);
+
+                return NoContent();
             }
-
-            await _projectRepository.DeleteProjectAsync(id);
-
-            return NoContent();
-        }
 
         // GET: api/Project/User/Projects
         [HttpGet("User/Projects")]

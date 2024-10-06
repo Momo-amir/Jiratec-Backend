@@ -25,5 +25,5 @@ public class Comment
     public Task Task { get; set; } // The task associated with the comment
 
     [ForeignKey("UserID")]
-    public User User { get; set; } // The user who made the comment
+    public User? User { get; set; } // The user who made the comment
 }
