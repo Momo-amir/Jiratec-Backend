@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using DAL.Models;
-using Repository.Interfaces; // Include the repository interface
+using Repository.Interfaces; 
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ActivityLogController : ControllerBase
+    public class ActivityLogController : ControllerBase // Controller class for ActivityLog not yet implemented
     {
         private readonly IActivityLogRepository _activityLogRepository;
 

@@ -10,7 +10,7 @@ namespace DAL.Models
         public int ProjectID { get; set; }
 
         [Required]
-        [StringLength(100)] // Optional: Max length for the title
+        [StringLength(100)] // Optional: Max length for the title - could be adjusted
         public string Title { get; set; } // Non-nullable
 
         [Required]

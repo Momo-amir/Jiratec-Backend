@@ -24,7 +24,7 @@ namespace DAL.Models
         {
             if (project == null) return null;
 
-            return new ProjectDTO
+            return new ProjectDTO // Mapping Project to ProjectDTO - This is done to avoid circular references when serializing the object - e.g. Project -> User -> Project -> User -> etc.
             {
                 ProjectID = project.ProjectID,
                 Title = project.Title,
@@ -61,16 +61,16 @@ namespace DAL.Models
         }
     }
 
-    public class TaskDTO
+    public class TaskDTO // I should have made this a file called TaskDTO.cs
     {
         public int TaskID { get; set; }
-        public int ProjectID { get; set; } // Include ProjectID
-        public string Title { get; set; } // Required
-        public string? Description { get; set; } // Optional
-        public int AssignedTo { get; set; } // Required
-        public string? AssignedToName { get; set; } // Optional
-        public TaskStatusEnum Status { get; set; } // Required
-        public TaskPriorityEnum Priority { get; set; } // Required
-        public DateTime? DueDate { get; set; } // Optional
+        public int ProjectID { get; set; } // Include ProjectID for easier mapping
+        public string Title { get; set; }  
+        public string? Description { get; set; } 
+        public int AssignedTo { get; set; } 
+        public string? AssignedToName { get; set; } 
+        public TaskStatusEnum Status { get; set; } 
+        public TaskPriorityEnum Priority { get; set; } 
+        public DateTime? DueDate { get; set; } 
     }
 }

@@ -22,7 +22,7 @@ public class ProjectRepositoryTests
     [Fact]
     public async System.Threading.Tasks.Task GetAllProjectsAsync_ShouldReturnListOfProjects_WhenProjectsExist()
     {
-        // Arrange
+        // Arrange - Arrange will create the required entities and add them to the in memory database
         using (var context = new AppDbContext(_options))
         {
             context.Database.EnsureDeleted(); // Ensures a clean state
@@ -56,13 +56,13 @@ public class ProjectRepositoryTests
             await context.SaveChangesAsync(); // Ensure changes are saved
         }
 
-        // Act
+        // Act - Act will call the method being tested and get the result
         using (var context = new AppDbContext(_options))
         {
             var repository = new ProjectRepository(context);
             var result = await repository.GetAllProjectsAsync();
 
-            // Assert
+            // Assert - Assert will check if the result is as expected
             Assert.NotNull(result);
             Assert.IsType<List<Project>>(result);
             Assert.Equal(2, result.Count()); // Expecting 2 projects
@@ -73,7 +73,7 @@ public class ProjectRepositoryTests
     [Fact]
     public async System.Threading.Tasks.Task   GetAllProjectsAsync_ShouldReturnEmptyList_WhenNoProjectsExist()
     {
-        // Arrange
+        // Arrange 
         using (var context = new AppDbContext(_options))
         {
             context.Database.EnsureDeleted(); // Ensures a clean state
@@ -86,7 +86,6 @@ public class ProjectRepositoryTests
             var repository = new ProjectRepository(context);
             var result = await repository.GetAllProjectsAsync();
 
-            // Assert
             Assert.NotNull(result);
             Assert.Empty(result); // Expecting no projects
         }

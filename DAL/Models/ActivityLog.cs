@@ -3,7 +3,7 @@
 
     namespace DAL.Models;
 
-    public class ActivityLog
+    public class ActivityLog // Activity log is not yet implemented in the application but could be used to track user actions
     {
         [Key] // Specifies that LogID is the primary key
         public int LogID { get; set; }

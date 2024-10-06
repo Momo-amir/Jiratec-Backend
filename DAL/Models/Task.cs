@@ -22,7 +22,7 @@ namespace DAL.Models
         public int AssignedTo { get; set; }
         
         [ForeignKey("AssignedTo")]
-        public User AssignedUser { get; set; }
+        public User? AssignedUser { get; set; }
 
         [Required]
         [EnumDataType(typeof(TaskStatusEnum))]
@@ -32,7 +32,6 @@ namespace DAL.Models
         [EnumDataType(typeof(TaskPriorityEnum))]
         public TaskPriorityEnum Priority { get; set; } = TaskPriorityEnum.Medium; // Default to 'Medium'
 
-        // Use nullable DateTime if due date is optional
         public DateTime? DueDate { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;

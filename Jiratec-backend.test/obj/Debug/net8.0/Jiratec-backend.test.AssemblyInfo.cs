@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Jiratec-backend.test")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c701522bf68da88cc99f810bf0556733abc90cbf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6347d99f4743a35fcd5e0fd3caacfcbaf8ff14ee")]
 [assembly: System.Reflection.AssemblyProductAttribute("Jiratec-backend.test")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Jiratec-backend.test")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

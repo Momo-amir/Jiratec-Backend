@@ -20,55 +20,65 @@ namespace API.Controllers
         [HttpGet("task/{taskId}")]
         public async Task<ActionResult<IEnumerable<CommentDto>>> GetCommentsByTaskId(int taskId)
         {
-            var comments = await _commentRepository.GetCommentsByTaskIdAsync(taskId);
-
-            if (comments == null || !comments.Any())
+            try
             {
-                return NotFound("No comments found for this task.");
-            }
+                var comments = await _commentRepository.GetCommentsByTaskIdAsync(taskId);
 
-            // Convert to DTO
-            var commentDtos = comments.Select(c => new CommentDto
-            {
-                CommentID = c.CommentID,
-                TaskID = c.TaskID,
-                UserID = c.UserID,
-                Content = c.Content,
-                CreatedDate = c.CreatedDate,
-                User = new UserDTO // Make sure this resolves properly
+                if (comments == null || !comments.Any())
                 {
-                    UserID = c.User.UserID,
-                    Name = c.User.Name,
-                    Email = c.User.Email
+                    return NotFound("No comments found for this task.");
                 }
-            });
 
-            return Ok(commentDtos);
+                var commentDtos = comments.Select(c => new CommentDto
+                {
+                    CommentID = c.CommentID,
+                    TaskID = c.TaskID,
+                    UserID = c.UserID,
+                    Content = c.Content,
+                    CreatedDate = c.CreatedDate,
+                    User = new UserDTO
+                    {
+                        UserID = c.User.UserID,
+                        Name = c.User.Name,
+                        Email = c.User.Email
+                    }
+                });
+
+                return Ok(commentDtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
-    
 
-        // GET: api/comments/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<CommentDto>> GetComment(int id)
         {
-            var comment = await _commentRepository.GetCommentByIdAsync(id);
-
-            if (comment == null)
+            try
             {
-                return NotFound();
+                var comment = await _commentRepository.GetCommentByIdAsync(id);
+
+                if (comment == null)
+                {
+                    return NotFound();
+                }
+
+                var commentDto = new CommentDto
+                {
+                    CommentID = comment.CommentID,
+                    TaskID = comment.TaskID,
+                    UserID = comment.UserID,
+                    Content = comment.Content,
+                    CreatedDate = comment.CreatedDate
+                };
+
+                return Ok(commentDto);
             }
-
-            // Convert to DTO
-            var commentDto = new CommentDto
+            catch (Exception ex)
             {
-                CommentID = comment.CommentID,
-                TaskID = comment.TaskID,
-                UserID = comment.UserID,
-                Content = comment.Content,
-                CreatedDate = comment.CreatedDate
-            };
-
-            return Ok(commentDto);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
         [HttpPut("{id}")]
@@ -79,89 +89,99 @@ namespace API.Controllers
                 return BadRequest("Comment ID mismatch.");
             }
 
-            // Fetch the existing comment from the repository
-            var existingComment = await _commentRepository.GetCommentByIdAsync(id);
-
-            if (existingComment == null)
-            {
-                return NotFound("Comment not found.");
-            }
-
-            // Update the existing comment's fields with the new values from commentDto
-            existingComment.Content = commentDto.Content;
-            existingComment.CreatedDate = commentDto.CreatedDate; // If the date is intended to be updated
-            // Note: TaskID and UserID are usually not changed when updating a comment, but adjust accordingly if needed.
-
             try
             {
-                await _commentRepository.UpdateCommentAsync(existingComment);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (await _commentRepository.GetCommentByIdAsync(id) == null)
+                var existingComment = await _commentRepository.GetCommentByIdAsync(id);
+
+                if (existingComment == null)
                 {
                     return NotFound("Comment not found.");
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
+                existingComment.Content = commentDto.Content;
+                existingComment.CreatedDate = commentDto.CreatedDate;
+
+                try
+                {
+                    await _commentRepository.UpdateCommentAsync(existingComment);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (await _commentRepository.GetCommentByIdAsync(id) == null)
+                    {
+                        return NotFound("Comment not found.");
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
+        [HttpPost]
+        public async Task<ActionResult<CommentDto>> CreateComment(CommentDto commentDto)
+        {
+            if (commentDto == null || commentDto.TaskID == 0 || commentDto.UserID == 0 || string.IsNullOrEmpty(commentDto.Content))
+            {
+                return BadRequest("Invalid comment payload.");
+            }
 
-        // POST: api/comments
-       [HttpPost]
-public async Task<ActionResult<CommentDto>> CreateComment(CommentDto commentDto)
-{
-    // Validate the payload
-    if (commentDto == null || commentDto.TaskID == 0 || commentDto.UserID == 0 || string.IsNullOrEmpty(commentDto.Content))
-    {
-        return BadRequest("Invalid comment payload.");
-    }
+            try
+            {
+                var comment = new Comment
+                {
+                    TaskID = commentDto.TaskID,
+                    UserID = commentDto.UserID,
+                    Content = commentDto.Content,
+                    CreatedDate = DateTime.Now
+                };
 
-    // Convert DTO to entity
-    var comment = new Comment
-    {
-        TaskID = commentDto.TaskID,
-        UserID = commentDto.UserID,
-        Content = commentDto.Content,
-        CreatedDate = DateTime.Now
-    };
+                await _commentRepository.AddCommentAsync(comment);
 
-    // Add the comment using the repository
-    await _commentRepository.AddCommentAsync(comment);
+                var createdCommentDto = new CommentDto
+                {
+                    CommentID = comment.CommentID,
+                    TaskID = comment.TaskID,
+                    UserID = comment.UserID,
+                    Content = comment.Content,
+                    CreatedDate = comment.CreatedDate,
+                    User = null
+                };
 
-    // Prepare the response DTO
-    var createdCommentDto = new CommentDto
-    {
-        CommentID = comment.CommentID,
-        TaskID = comment.TaskID,
-        UserID = comment.UserID,
-        Content = comment.Content,
-        CreatedDate = comment.CreatedDate,
-        // Optionally include the UserDTO if needed
-        User = null // Since we didn't include it, it's null
-    };
+                return CreatedAtAction(nameof(GetComment), new { id = comment.CommentID }, createdCommentDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
-    return CreatedAtAction(nameof(GetComment), new { id = comment.CommentID }, createdCommentDto);
-}
-
-        // DELETE: api/comments/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteComment(int id)
         {
-            var comment = await _commentRepository.GetCommentByIdAsync(id);
-
-            if (comment == null)
+            try
             {
-                return NotFound();
-            }
+                var comment = await _commentRepository.GetCommentByIdAsync(id);
 
-            await _commentRepository.DeleteCommentAsync(id);
-            return NoContent();
+                if (comment == null)
+                {
+                    return NotFound();
+                }
+
+                await _commentRepository.DeleteCommentAsync(id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
     }
 }
