@@ -90,4 +90,41 @@ public class ProjectRepositoryTests
             Assert.Empty(result); // Expecting no projects
         }
     }
+    
+    [Fact]
+    public async System.Threading.Tasks.Task DeleteProjectAsync_ShouldRemoveProjectFromDatabase()
+    {
+        // Arrange
+        using (var context = new AppDbContext(_options))
+        {
+            context.Database.EnsureDeleted();
+
+            var user = new User { Name = "Test User", Email = "test@example.com", PasswordHash = "hashed_password" };
+            var project = new Project
+            {
+                Title = "Project to Delete",
+                Description = "This project will be deleted",
+                CreatedBy = user,
+                Users = new List<User> { user }
+            };
+
+            context.Users.Add(user);
+            context.Projects.Add(project);
+            await context.SaveChangesAsync();
+        }
+
+        // Act
+        using (var context = new AppDbContext(_options))
+        {
+            var repository = new ProjectRepository(context);
+            var projectToDelete = await context.Projects.FirstAsync();
+            await repository.DeleteProjectAsync(projectToDelete.ProjectID);
+
+            // Assert
+            var result = await context.Projects.FirstOrDefaultAsync(p => p.ProjectID == projectToDelete.ProjectID);
+            Assert.Null(result);  // Project should be deleted
+        }
+    }
+
+    
 }
