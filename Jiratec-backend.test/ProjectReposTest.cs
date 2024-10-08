@@ -125,6 +125,46 @@ public class ProjectRepositoryTests
             Assert.Null(result);  // Project should be deleted
         }
     }
+    
+    [Fact]
+    public async System.Threading.Tasks.Task UpdateProjectAsync_ShouldUpdateExistingProject()
+    {
+        // Arrange
+        using (var context = new AppDbContext(_options))
+        {
+            context.Database.EnsureDeleted();
+
+            var user = new User { Name = "Test User", Email = "test@example.com", PasswordHash = "hashed_password" };
+            var project = new Project
+            {
+                Title = "Original Project",
+                Description = "Original Description",
+                CreatedBy = user,
+                Users = new List<User> { user }
+            };
+
+            context.Users.Add(user);
+            context.Projects.Add(project);
+            await context.SaveChangesAsync();
+        }
+
+        // Act
+        using (var context = new AppDbContext(_options))
+        {
+            var repository = new ProjectRepository(context);
+            var projectToUpdate = await context.Projects.FirstAsync();
+            projectToUpdate.Title = "Updated Project";
+            projectToUpdate.Description = "Updated Description";
+
+            await repository.UpdateProjectAsync(projectToUpdate);
+
+            // Assert
+            var result = await context.Projects.FirstAsync();
+            Assert.Equal("Updated Project", result.Title);
+            Assert.Equal("Updated Description", result.Description);
+        }
+    }
+
 
     
 }
